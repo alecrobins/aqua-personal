@@ -1,7 +1,7 @@
 {
-  "name": "aqua",
-  "version": "7.0.2",
-  "description": "A website and user system for Node.js",
+  "name": "aqua-personal",
+  "version": "1.0.0",
+  "description": "Made some personal changes to the aqua project",
   "main": "index.js",
   "scripts": {
     "start": "gulp",
@@ -57,6 +57,7 @@
     "cookie": "0.3.x",
     "del": "3.x.x",
     "eslint-config-hapi": "10.x.x",
+    "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-react": "7.x.x",
     "exenv": "1.x.x",
     "flux": "3.x.x",
@@ -75,6 +76,7 @@
     "merge-stream": "1.x.x",
     "moment": "2.18.x",
     "nodemon": "1.x.x",
+    "prettier": "^1.10.2",
     "promptly": "2.x.x",
     "prop-types": "15.x.x",
     "proxyquire": "1.x.x",

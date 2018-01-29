@@ -4,39 +4,31 @@ const Code = require('code');
 const Lab = require('lab');
 const ReactDOM = require('react-dom');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 let mountNode;
 
+lab.before(done => {
+  mountNode = global.document.createElement('div');
+  mountNode.id = 'app-mount';
+  global.document.body.appendChild(mountNode);
 
-lab.before((done) => {
-
-    mountNode = global.document.createElement('div');
-    mountNode.id = 'app-mount';
-    global.document.body.appendChild(mountNode);
-
-    done();
+  done();
 });
 
+lab.after(done => {
+  ReactDOM.unmountComponentAtNode(mountNode);
+  global.document.body.removeChild(mountNode);
+  delete global.window.app;
 
-lab.after((done) => {
-
-    ReactDOM.unmountComponentAtNode(mountNode);
-    global.document.body.removeChild(mountNode);
-    delete global.window.app;
-
-    done();
+  done();
 });
-
 
 lab.experiment('Admin App', () => {
+  lab.test('it renders', done => {
+    App.blastoff();
 
-    lab.test('it renders', (done) => {
+    Code.expect(App.mainElement).to.be.an.object();
 
-        App.blastoff();
-
-        Code.expect(App.mainElement).to.be.an.object();
-
-        done();
-    });
+    done();
+  });
 });

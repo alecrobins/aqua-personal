@@ -7,43 +7,35 @@ const ReactRouter = require('react-router-dom');
 const ReactTestUtils = require('react-dom/test-utils');
 const SignupPage = require('../../../../../client/pages/main/signup/index.jsx');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const MemoryRouter = ReactRouter.MemoryRouter;
 
-
 lab.experiment('Signup Page', () => {
+  let RootEl;
 
-    let RootEl;
+  lab.beforeEach(done => {
+    const SignupPageEl = React.createElement(SignupPage, {});
 
-    lab.beforeEach((done) => {
+    RootEl = React.createElement(MemoryRouter, {}, SignupPageEl);
 
-        const SignupPageEl = React.createElement(SignupPage, {});
+    done();
+  });
 
-        RootEl = React.createElement(MemoryRouter, {}, SignupPageEl);
+  lab.test('it renders', done => {
+    const root = ReactTestUtils.renderIntoDocument(RootEl);
+    const page = ReactTestUtils.findRenderedComponentWithType(root, SignupPage);
 
-        done();
-    });
+    Code.expect(page).to.exist();
 
+    done();
+  });
 
-    lab.test('it renders', (done) => {
+  lab.test('it handles unmounting', done => {
+    const container = global.document.createElement('div');
 
-        const root = ReactTestUtils.renderIntoDocument(RootEl);
-        const page = ReactTestUtils.findRenderedComponentWithType(root, SignupPage);
+    ReactDOM.render(RootEl, container);
+    ReactDOM.unmountComponentAtNode(container);
 
-        Code.expect(page).to.exist();
-
-        done();
-    });
-
-
-    lab.test('it handles unmounting', (done) => {
-
-        const container = global.document.createElement('div');
-
-        ReactDOM.render(RootEl, container);
-        ReactDOM.unmountComponentAtNode(container);
-
-        done();
-    });
+    done();
+  });
 });

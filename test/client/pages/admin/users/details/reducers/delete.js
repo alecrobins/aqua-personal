@@ -4,57 +4,49 @@ const Constants = require('../../../../../../../client/pages/admin/users/details
 const Lab = require('lab');
 const Store = require('../../../../../../../client/pages/admin/users/details/store');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('Admin Users Delete Reducer', () => {
-
-    lab.test('it handles a GET_DETAILS_RESPONSE action', (done) => {
-
-        Store.dispatch({
-            type: Constants.GET_DETAILS_RESPONSE,
-            err: null,
-            response: {
-                _id: 'abcxyz'
-            }
-        });
-
-        const state = Store.getState().delete;
-
-        Code.expect(state.loading).to.be.false();
-        Code.expect(state.error).to.be.undefined();
-
-        done();
+  lab.test('it handles a GET_DETAILS_RESPONSE action', done => {
+    Store.dispatch({
+      type: Constants.GET_DETAILS_RESPONSE,
+      err: null,
+      response: {
+        _id: 'abcxyz',
+      },
     });
 
+    const state = Store.getState().delete;
 
-    lab.test('it handles a DELETE action', (done) => {
+    Code.expect(state.loading).to.be.false();
+    Code.expect(state.error).to.be.undefined();
 
-        Store.dispatch({
-            type: Constants.DELETE
-        });
+    done();
+  });
 
-        const state = Store.getState().delete;
-
-        Code.expect(state.loading).to.be.true();
-
-        done();
+  lab.test('it handles a DELETE action', done => {
+    Store.dispatch({
+      type: Constants.DELETE,
     });
 
+    const state = Store.getState().delete;
 
-    lab.test('it handles a DELETE_RESPONSE action', (done) => {
+    Code.expect(state.loading).to.be.true();
 
-        Store.dispatch({
-            type: Constants.DELETE_RESPONSE,
-            err: null,
-            response: {}
-        });
+    done();
+  });
 
-        const state = Store.getState().delete;
-
-        Code.expect(state.loading).to.be.false();
-
-        done();
+  lab.test('it handles a DELETE_RESPONSE action', done => {
+    Store.dispatch({
+      type: Constants.DELETE_RESPONSE,
+      err: null,
+      response: {},
     });
+
+    const state = Store.getState().delete;
+
+    Code.expect(state.loading).to.be.false();
+
+    done();
+  });
 });

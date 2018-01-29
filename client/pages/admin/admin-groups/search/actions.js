@@ -5,64 +5,56 @@ const Constants = require('./constants');
 const Store = require('./store');
 const Qs = require('qs');
 
-
 class Actions {
-    static getResults(data) {
+  static getResults(data) {
+    ApiActions.get(
+      '/api/admin-groups',
+      data,
+      Store,
+      Constants.GET_RESULTS,
+      Constants.GET_RESULTS_RESPONSE
+    );
+  }
 
-        ApiActions.get(
-            '/api/admin-groups',
-            data,
-            Store,
-            Constants.GET_RESULTS,
-            Constants.GET_RESULTS_RESPONSE
-        );
-    }
+  static changeSearchQuery(data, history) {
+    history.push({
+      pathname: '/admin/admin-groups',
+      search: `?${Qs.stringify(data)}`,
+    });
 
-    static changeSearchQuery(data, history) {
+    window.scrollTo(0, 0);
+  }
 
-        history.push({
-            pathname: '/admin/admin-groups',
-            search: `?${Qs.stringify(data)}`
-        });
+  static showCreateNew(data) {
+    Store.dispatch({
+      type: Constants.SHOW_CREATE_NEW,
+    });
+  }
 
-        window.scrollTo(0, 0);
-    }
+  static hideCreateNew(data) {
+    Store.dispatch({
+      type: Constants.HIDE_CREATE_NEW,
+    });
+  }
 
-    static showCreateNew(data) {
+  static createNew(data, history) {
+    ApiActions.post(
+      '/api/admin-groups',
+      data,
+      Store,
+      Constants.CREATE_NEW,
+      Constants.CREATE_NEW_RESPONSE,
+      (err, response) => {
+        if (!err) {
+          this.hideCreateNew();
 
-        Store.dispatch({
-            type: Constants.SHOW_CREATE_NEW
-        });
-    }
+          history.replace(window.location);
 
-    static hideCreateNew(data) {
-
-        Store.dispatch({
-            type: Constants.HIDE_CREATE_NEW
-        });
-    }
-
-    static createNew(data, history) {
-
-        ApiActions.post(
-            '/api/admin-groups',
-            data,
-            Store,
-            Constants.CREATE_NEW,
-            Constants.CREATE_NEW_RESPONSE,
-            (err, response) => {
-
-                if (!err) {
-                    this.hideCreateNew();
-
-                    history.replace(window.location);
-
-                    window.scrollTo(0, 0);
-                }
-            }
-        );
-    }
+          window.scrollTo(0, 0);
+        }
+      }
+    );
+  }
 }
-
 
 module.exports = Actions;

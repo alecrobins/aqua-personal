@@ -6,106 +6,97 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const ReactTestUtils = require('react-dom/test-utils');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const defaultProps = {
-    loading: false,
-    query: {},
-    onChange: () => {}
+  loading: false,
+  query: {},
+  onChange: () => {},
 };
 
-
 lab.experiment('Filter Form HOC', () => {
+  lab.test('it renders', done => {
+    const FilterFormEl = React.createElement(FilterForm, defaultProps);
+    const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
 
-    lab.test('it renders', (done) => {
+    Code.expect(form).to.exist();
 
-        const FilterFormEl = React.createElement(FilterForm, defaultProps);
-        const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
+    done();
+  });
 
-        Code.expect(form).to.exist();
+  lab.test('it updates props with new input state data', done => {
+    const container = document.createElement('div');
 
-        done();
+    // initial render
+    let FilterFormEl = React.createElement(FilterForm, defaultProps);
+    ReactDOM.render(FilterFormEl, container);
+
+    // update props and render again
+    const props = Object.assign({}, defaultProps, {
+      loading: true,
+    });
+    FilterFormEl = React.createElement(FilterForm, props);
+    ReactDOM.render(FilterFormEl, container);
+
+    done();
+  });
+
+  lab.test('it handles a select menu change event', done => {
+    const props = Object.assign({}, defaultProps, {
+      query: {
+        page: '2',
+      },
+    });
+    const FilterFormEl = React.createElement(FilterForm, props);
+    const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
+    const select = ReactTestUtils.findRenderedDOMComponentWithTag(
+      form,
+      'select'
+    );
+
+    Code.expect(form.state.page).to.equal('2');
+
+    ReactTestUtils.Simulate.change(select, {
+      target: {
+        name: 'select',
+        value: 'b',
+      },
     });
 
+    Code.expect(form.state.page).to.equal('1');
 
-    lab.test('it updates props with new input state data', (done) => {
+    done();
+  });
 
-        const container = document.createElement('div');
-
-        // initial render
-        let FilterFormEl = React.createElement(FilterForm, defaultProps);
-        ReactDOM.render(FilterFormEl, container);
-
-        // update props and render again
-        const props = Object.assign({}, defaultProps, {
-            loading: true
-        });
-        FilterFormEl = React.createElement(FilterForm, props);
-        ReactDOM.render(FilterFormEl, container);
-
-        done();
+  lab.test('it handles submit on enter key, but not another key', done => {
+    const props = Object.assign({}, defaultProps, {
+      query: {
+        page: '2',
+      },
     });
+    const FilterFormEl = React.createElement(FilterForm, props);
+    const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
+    const text = ReactTestUtils.findRenderedDOMComponentWithTag(form, 'input');
 
+    Code.expect(form.state.page).to.equal('2');
 
-    lab.test('it handles a select menu change event', (done) => {
+    ReactTestUtils.Simulate.keyDown(text, { key: 'a' });
+    ReactTestUtils.Simulate.keyDown(text, { key: 'Enter', which: 13 });
 
-        const props = Object.assign({}, defaultProps, {
-            query: {
-                page: '2'
-            }
-        });
-        const FilterFormEl = React.createElement(FilterForm, props);
-        const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
-        const select = ReactTestUtils.findRenderedDOMComponentWithTag(form, 'select');
+    Code.expect(form.state.page).to.equal('1');
 
-        Code.expect(form.state.page).to.equal('2');
+    done();
+  });
 
-        ReactTestUtils.Simulate.change(select, {
-            target: {
-                name: 'select',
-                value: 'b'
-            }
-        });
+  lab.test('it handles a page change', done => {
+    const FilterFormEl = React.createElement(FilterForm, defaultProps);
+    const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
 
-        Code.expect(form.state.page).to.equal('1');
+    Code.expect(form.state.page).to.equal('1');
 
-        done();
-    });
+    form.changePage('2');
 
+    Code.expect(form.state.page).to.equal('2');
 
-    lab.test('it handles submit on enter key, but not another key', (done) => {
-
-        const props = Object.assign({}, defaultProps, {
-            query: {
-                page: '2'
-            }
-        });
-        const FilterFormEl = React.createElement(FilterForm, props);
-        const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
-        const text = ReactTestUtils.findRenderedDOMComponentWithTag(form, 'input');
-
-        Code.expect(form.state.page).to.equal('2');
-
-        ReactTestUtils.Simulate.keyDown(text, { key: 'a' });
-        ReactTestUtils.Simulate.keyDown(text, { key: 'Enter', which: 13 });
-
-        Code.expect(form.state.page).to.equal('1');
-
-        done();
-    });
-
-
-    lab.test('it handles a page change', (done) => {
-
-        const FilterFormEl = React.createElement(FilterForm, defaultProps);
-        const form = ReactTestUtils.renderIntoDocument(FilterFormEl);
-
-        Code.expect(form.state.page).to.equal('1');
-
-        form.changePage('2');
-
-        Code.expect(form.state.page).to.equal('2');
-
-        done();
-    });
+    done();
+  });
 });

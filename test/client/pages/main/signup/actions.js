@@ -4,69 +4,73 @@ const FluxConstant = require('flux-constant');
 const Lab = require('lab');
 const Proxyquire = require('proxyquire');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const stub = {
-    ApiActions: {
-        post: function () {
-
-            stub.ApiActions.post.mock.apply(null, arguments);
-        }
-    }
+  ApiActions: {
+    post: function() {
+      stub.ApiActions.post.mock.apply(null, arguments);
+    },
+  },
 };
 const Actions = Proxyquire('../../../../../client/pages/main/signup/actions', {
-    '../../../actions/api': stub.ApiActions
+  '../../../actions/api': stub.ApiActions,
 });
 
-
 lab.experiment('Sign Up Actions', () => {
+  lab.test.skip('it calls ApiActions.post from sendRequest (success)', done => {
+    const windowLocation = global.window.location;
 
-    lab.test.skip('it calls ApiActions.post from sendRequest (success)', (done) => {
+    Object.defineProperty(global.window.location, 'href', {
+      configurable: true,
+      set: function() {
+        global.window.location = windowLocation;
 
-        const windowLocation = global.window.location;
-
-        Object.defineProperty(global.window.location, 'href', {
-            configurable: true,
-            set: function () {
-
-                global.window.location = windowLocation;
-
-                done();
-            }
-        });
-
-        stub.ApiActions.post.mock = function (url, data, store, typeReq, typeRes, callback) {
-
-            Code.expect(url).to.be.a.string();
-            Code.expect(data).to.be.an.object();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.exist();
-
-            callback(null, {});
-        };
-
-        Actions.sendRequest({});
+        done();
+      },
     });
 
+    stub.ApiActions.post.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(data).to.be.an.object();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.exist();
 
-    lab.test('it calls ApiActions.post from sendRequest (error)', (done) => {
+      callback(null, {});
+    };
 
-        stub.ApiActions.post.mock = function (url, data, store, typeReq, typeRes, callback) {
+    Actions.sendRequest({});
+  });
 
-            Code.expect(url).to.be.a.string();
-            Code.expect(data).to.be.an.object();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.exist();
+  lab.test('it calls ApiActions.post from sendRequest (error)', done => {
+    stub.ApiActions.post.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(data).to.be.an.object();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.exist();
 
-            callback(new Error('sorry pal'));
+      callback(new Error('sorry pal'));
 
-            done();
-        };
+      done();
+    };
 
-        Actions.sendRequest({});
-    });
+    Actions.sendRequest({});
+  });
 });

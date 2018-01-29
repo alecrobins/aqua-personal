@@ -4,88 +4,81 @@ const Constants = require('../../../../../client/pages/main/contact/constants');
 const Lab = require('lab');
 const Store = require('../../../../../client/pages/main/contact/store');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('Contact Store', () => {
-
-    lab.test('it handles a SEND_MESSAGE action', (done) => {
-
-        Store.dispatch({
-            type: Constants.SEND_MESSAGE
-        });
-
-        const state = Store.getState();
-
-        Code.expect(state.loading).to.be.true();
-        Code.expect(state.success).to.be.false();
-
-        done();
+  lab.test('it handles a SEND_MESSAGE action', done => {
+    Store.dispatch({
+      type: Constants.SEND_MESSAGE,
     });
 
+    const state = Store.getState();
 
-    lab.test('it handles a SEND_MESSAGE_RESPONSE action (success)', (done) => {
+    Code.expect(state.loading).to.be.true();
+    Code.expect(state.success).to.be.false();
 
-        Store.dispatch({
-            type: Constants.SEND_MESSAGE_RESPONSE,
-            err: null,
-            response: {}
-        });
+    done();
+  });
 
-        const state = Store.getState();
-
-        Code.expect(state.loading).to.be.false();
-        Code.expect(state.success).to.be.true();
-
-        done();
+  lab.test('it handles a SEND_MESSAGE_RESPONSE action (success)', done => {
+    Store.dispatch({
+      type: Constants.SEND_MESSAGE_RESPONSE,
+      err: null,
+      response: {},
     });
 
+    const state = Store.getState();
 
-    lab.test('it handles a SEND_MESSAGE_RESPONSE action (validation errors)', (done) => {
+    Code.expect(state.loading).to.be.false();
+    Code.expect(state.success).to.be.true();
 
-        const response = {
-            validation: {
-                keys: ['name']
-            },
-            message: 'name is required'
-        };
+    done();
+  });
 
-        Store.dispatch({
-            type: Constants.SEND_MESSAGE_RESPONSE,
-            err: Error('sorry pal'),
-            response
-        });
+  lab.test(
+    'it handles a SEND_MESSAGE_RESPONSE action (validation errors)',
+    done => {
+      const response = {
+        validation: {
+          keys: ['name'],
+        },
+        message: 'name is required',
+      };
 
-        const state = Store.getState();
+      Store.dispatch({
+        type: Constants.SEND_MESSAGE_RESPONSE,
+        err: Error('sorry pal'),
+        response,
+      });
 
-        Code.expect(state.loading).to.be.false();
-        Code.expect(state.success).to.be.false();
-        Code.expect(state.hasError).to.have.length(1);
-        Code.expect(state.help).to.have.length(1);
+      const state = Store.getState();
 
-        done();
+      Code.expect(state.loading).to.be.false();
+      Code.expect(state.success).to.be.false();
+      Code.expect(state.hasError).to.have.length(1);
+      Code.expect(state.help).to.have.length(1);
+
+      done();
+    }
+  );
+
+  lab.test('it handles a SEND_MESSAGE_RESPONSE action (other error)', done => {
+    const response = {
+      message: 'something else failed',
+    };
+
+    Store.dispatch({
+      type: Constants.SEND_MESSAGE_RESPONSE,
+      err: Error('sorry pal'),
+      response,
     });
 
+    const state = Store.getState();
 
-    lab.test('it handles a SEND_MESSAGE_RESPONSE action (other error)', (done) => {
+    Code.expect(state.loading).to.be.false();
+    Code.expect(state.success).to.be.false();
+    Code.expect(state.error).to.equal('something else failed');
 
-        const response = {
-            message: 'something else failed'
-        };
-
-        Store.dispatch({
-            type: Constants.SEND_MESSAGE_RESPONSE,
-            err: Error('sorry pal'),
-            response
-        });
-
-        const state = Store.getState();
-
-        Code.expect(state.loading).to.be.false();
-        Code.expect(state.success).to.be.false();
-        Code.expect(state.error).to.equal('something else failed');
-
-        done();
-    });
+    done();
+  });
 });

@@ -12,151 +12,130 @@ const Manifest = require('../../../manifest');
 const Path = require('path');
 const Vision = require('vision');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const ModelsPlugin = {
-    register: require('hapi-mongo-models'),
-    options: Manifest.get('/registrations').filter((reg) => {
-
-        return reg.plugin.register === 'hapi-mongo-models';
-    })[0].plugin.options
+  register: require('hapi-mongo-models'),
+  options: Manifest.get('/registrations').filter(reg => {
+    return reg.plugin.register === 'hapi-mongo-models';
+  })[0].plugin.options,
 };
 let request;
 let server;
 
+lab.before(done => {
+  const plugins = [Vision, HapiAuth, ModelsPlugin, AuthPlugin, MainPlugin];
+  server = new Hapi.Server();
+  server.connection({ port: Config.get('/port/web') });
+  server.register(plugins, err => {
+    if (err) {
+      return done(err);
+    }
 
-lab.before((done) => {
-
-    const plugins = [Vision, HapiAuth, ModelsPlugin, AuthPlugin, MainPlugin];
-    server = new Hapi.Server();
-    server.connection({ port: Config.get('/port/web') });
-    server.register(plugins, (err) => {
-
-        if (err) {
-            return done(err);
-        }
-
-        server.views({
-            engines: { jsx: require('hapi-react-views') },
-            path: './server/web',
-            relativeTo: Path.join(__dirname, '..', '..', '..')
-        });
-
-        server.initialize(done);
+    server.views({
+      engines: { jsx: require('hapi-react-views') },
+      path: './server/web',
+      relativeTo: Path.join(__dirname, '..', '..', '..'),
     });
-});
 
+    server.initialize(done);
+  });
+});
 
 lab.experiment('Main Page View', () => {
+  lab.test('main page renders properly', done => {
+    request = {
+      method: 'GET',
+      url: '/',
+    };
 
-    lab.test('main page renders properly', (done) => {
+    server.inject(request, response => {
+      Code.expect(response.result).to.match(/Success/i);
+      Code.expect(response.statusCode).to.equal(200);
 
-        request = {
-            method: 'GET',
-            url: '/'
-        };
-
-        server.inject(request, (response) => {
-
-            Code.expect(response.result).to.match(/Success/i);
-            Code.expect(response.statusCode).to.equal(200);
-
-            done();
-        });
+      done();
     });
+  });
 
+  lab.test('main page handles redirects from client', done => {
+    request = {
+      method: 'GET',
+      url: '/moved',
+    };
 
-    lab.test('main page handles redirects from client', (done) => {
+    server.inject(request, response => {
+      Code.expect(response.statusCode).to.equal(301);
 
-        request = {
-            method: 'GET',
-            url: '/moved'
-        };
-
-        server.inject(request, (response) => {
-
-            Code.expect(response.statusCode).to.equal(301);
-
-            done();
-        });
+      done();
     });
+  });
 
+  lab.test('main page handles custom status from client', done => {
+    request = {
+      method: 'GET',
+      url: '/not-found',
+    };
 
-    lab.test('main page handles custom status from client', (done) => {
+    server.inject(request, response => {
+      Code.expect(response.statusCode).to.equal(404);
 
-        request = {
-            method: 'GET',
-            url: '/not-found'
-        };
-
-        server.inject(request, (response) => {
-
-            Code.expect(response.statusCode).to.equal(404);
-
-            done();
-        });
+      done();
     });
+  });
 });
 
-
 lab.experiment('Main Page View Login Routes', () => {
+  lab.beforeEach(done => {
+    request = {
+      method: 'GET',
+      url: '/login',
+    };
 
-    lab.beforeEach((done) => {
+    done();
+  });
 
-        request = {
-            method: 'GET',
-            url: '/login'
-        };
+  lab.test('it renders properly', done => {
+    server.inject(request, response => {
+      Code.expect(response.result).to.match(/Sign in/i);
+      Code.expect(response.statusCode).to.equal(200);
 
+      done();
+    });
+  });
+
+  lab.test(
+    'it redirects to /admin when user is authenticated as an admin',
+    done => {
+      request.credentials = AuthenticatedAdmin;
+
+      server.inject(request, response => {
+        Code.expect(response.statusCode).to.equal(302);
         done();
-    });
+      });
+    }
+  );
 
+  lab.test(
+    'it redirects to /account when user is authenticated as an account',
+    done => {
+      request.credentials = AuthenticatedAccount;
 
-    lab.test('it renders properly', (done) => {
+      server.inject(request, response => {
+        Code.expect(response.statusCode).to.equal(302);
+        done();
+      });
+    }
+  );
 
-        server.inject(request, (response) => {
+  lab.test(
+    'it does not redirect when user is authenticated if the path is logout',
+    done => {
+      request.url += '/logout';
+      request.credentials = AuthenticatedAccount;
 
-            Code.expect(response.result).to.match(/Sign in/i);
-            Code.expect(response.statusCode).to.equal(200);
-
-            done();
-        });
-    });
-
-
-    lab.test('it redirects to /admin when user is authenticated as an admin', (done) => {
-
-        request.credentials = AuthenticatedAdmin;
-
-        server.inject(request, (response) => {
-
-            Code.expect(response.statusCode).to.equal(302);
-            done();
-        });
-    });
-
-
-    lab.test('it redirects to /account when user is authenticated as an account', (done) => {
-
-        request.credentials = AuthenticatedAccount;
-
-        server.inject(request, (response) => {
-
-            Code.expect(response.statusCode).to.equal(302);
-            done();
-        });
-    });
-
-
-    lab.test('it does not redirect when user is authenticated if the path is logout', (done) => {
-
-        request.url += '/logout';
-        request.credentials = AuthenticatedAccount;
-
-        server.inject(request, (response) => {
-
-            Code.expect(response.statusCode).to.equal(200);
-            done();
-        });
-    });
+      server.inject(request, response => {
+        Code.expect(response.statusCode).to.equal(200);
+        done();
+      });
+    }
+  );
 });

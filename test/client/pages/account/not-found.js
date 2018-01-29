@@ -7,42 +7,37 @@ const ReactDOM = require('react-dom');
 const ReactRouter = require('react-router-dom');
 const ReactTestUtils = require('react-dom/test-utils');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const MemoryRouter = ReactRouter.MemoryRouter;
 
-
 lab.experiment('Account Not Found Page', () => {
+  let RootEl;
 
-    let RootEl;
+  lab.beforeEach(done => {
+    const NotFoundEl = React.createElement(NotFound, {});
 
-    lab.beforeEach((done) => {
+    RootEl = React.createElement(MemoryRouter, {}, NotFoundEl);
 
-        const NotFoundEl = React.createElement(NotFound, {});
+    done();
+  });
 
-        RootEl = React.createElement(MemoryRouter, {}, NotFoundEl);
+  lab.test('it renders', done => {
+    const root = ReactTestUtils.renderIntoDocument(RootEl);
+    const notFound = ReactTestUtils.findRenderedComponentWithType(
+      root,
+      NotFound
+    );
 
-        done();
-    });
+    Code.expect(notFound).to.exist();
+    done();
+  });
 
+  lab.test('it handles unmounting', done => {
+    const container = global.document.createElement('div');
 
-    lab.test('it renders', (done) => {
+    ReactDOM.render(RootEl, container);
+    ReactDOM.unmountComponentAtNode(container);
 
-        const root = ReactTestUtils.renderIntoDocument(RootEl);
-        const notFound = ReactTestUtils.findRenderedComponentWithType(root, NotFound);
-
-        Code.expect(notFound).to.exist();
-        done();
-    });
-
-
-    lab.test('it handles unmounting', (done) => {
-
-        const container = global.document.createElement('div');
-
-        ReactDOM.render(RootEl, container);
-        ReactDOM.unmountComponentAtNode(container);
-
-        done();
-    });
+    done();
+  });
 });

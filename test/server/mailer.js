@@ -5,115 +5,92 @@ const Hapi = require('hapi');
 const Lab = require('lab');
 const Proxyquire = require('proxyquire');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const stub = {
-    fs: {},
-    nodemailer: {
-        createTransport: function (smtp) {
-
-            return {
-                use: function () {
-
-                    return;
-                },
-                sendMail: function (options, callback) {
-
-                    return callback(null, {});
-                }
-            };
-        }
-    }
+  fs: {},
+  nodemailer: {
+    createTransport: function(smtp) {
+      return {
+        use: function() {
+          return;
+        },
+        sendMail: function(options, callback) {
+          return callback(null, {});
+        },
+      };
+    },
+  },
 };
 const MailerPlugin = Proxyquire('../../server/mailer', {
-    'fs': stub.fs,
-    'nodemailer': stub.nodemailer
+  fs: stub.fs,
+  nodemailer: stub.nodemailer,
 });
 
-
 lab.experiment('Mailer Plugin', () => {
+  let server;
 
-    let server;
+  lab.before(done => {
+    server = new Hapi.Server();
+    server.connection({ port: Config.get('/port/web') });
+    server.register(MailerPlugin, err => {
+      if (err) {
+        return done(err);
+      }
 
-
-    lab.before((done) => {
-
-        server = new Hapi.Server();
-        server.connection({ port: Config.get('/port/web') });
-        server.register(MailerPlugin, (err) => {
-
-            if (err) {
-                return done(err);
-            }
-
-            done();
-        });
+      done();
     });
+  });
 
+  lab.test('it successfuly registers itself', done => {
+    Code.expect(server.plugins.mailer).to.be.an.object();
+    Code.expect(server.plugins.mailer.sendEmail).to.be.a.function();
 
-    lab.test('it successfuly registers itself', (done) => {
+    done();
+  });
 
-        Code.expect(server.plugins.mailer).to.be.an.object();
-        Code.expect(server.plugins.mailer.sendEmail).to.be.a.function();
+  lab.test('it returns error when read file fails', done => {
+    const realReadFile = stub.fs.readFile;
+    stub.fs.readFile = function(path, options, callback) {
+      return callback(Error('read file failed'));
+    };
 
-        done();
+    server.plugins.mailer.sendEmail({}, 'path', {}, (err, info) => {
+      stub.fs.readFile = realReadFile;
+      Code.expect(err).to.be.an.object();
+
+      done();
     });
+  });
 
+  lab.test('it sends an email', done => {
+    const realReadFile = stub.fs.readFile;
+    stub.fs.readFile = function(path, options, callback) {
+      return callback(null, '');
+    };
 
-    lab.test('it returns error when read file fails', (done) => {
+    server.plugins.mailer.sendEmail({}, 'path', {}, (err, info) => {
+      Code.expect(err).to.not.exist();
+      Code.expect(info).to.be.an.object();
 
-        const realReadFile = stub.fs.readFile;
-        stub.fs.readFile = function (path, options, callback) {
+      stub.fs.readFile = realReadFile;
 
-            return callback(Error('read file failed'));
-        };
-
-        server.plugins.mailer.sendEmail({}, 'path', {}, (err, info) => {
-
-            stub.fs.readFile = realReadFile;
-            Code.expect(err).to.be.an.object();
-
-            done();
-        });
+      done();
     });
+  });
 
+  lab.test('it returns early with the template is cached', done => {
+    const realReadFile = stub.fs.readFile;
+    stub.fs.readFile = function(path, options, callback) {
+      return callback(null, '');
+    };
 
-    lab.test('it sends an email', (done) => {
+    server.plugins.mailer.sendEmail({}, 'path', {}, (err, info) => {
+      Code.expect(err).to.not.exist();
+      Code.expect(info).to.be.an.object();
 
-        const realReadFile = stub.fs.readFile;
-        stub.fs.readFile = function (path, options, callback) {
+      stub.fs.readFile = realReadFile;
 
-            return callback(null, '');
-        };
-
-        server.plugins.mailer.sendEmail({}, 'path', {}, (err, info) => {
-
-            Code.expect(err).to.not.exist();
-            Code.expect(info).to.be.an.object();
-
-            stub.fs.readFile = realReadFile;
-
-            done();
-        });
+      done();
     });
-
-
-    lab.test('it returns early with the template is cached', (done) => {
-
-        const realReadFile = stub.fs.readFile;
-        stub.fs.readFile = function (path, options, callback) {
-
-            return callback(null, '');
-        };
-
-        server.plugins.mailer.sendEmail({}, 'path', {}, (err, info) => {
-
-            Code.expect(err).to.not.exist();
-            Code.expect(info).to.be.an.object();
-
-            stub.fs.readFile = realReadFile;
-
-            done();
-        });
-    });
+  });
 });

@@ -5,82 +5,77 @@ const Lab = require('lab');
 const React = require('react');
 const ReactTestUtils = require('react-dom/test-utils');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('Delete Form', () => {
+  lab.test('it renders', done => {
+    const FormEl = React.createElement(Form, {});
+    const form = ReactTestUtils.renderIntoDocument(FormEl);
 
-    lab.test('it renders', (done) => {
+    Code.expect(form).to.exist();
 
-        const FormEl = React.createElement(Form, {});
-        const form = ReactTestUtils.renderIntoDocument(FormEl);
+    done();
+  });
 
-        Code.expect(form).to.exist();
+  lab.test('it renders with error state', done => {
+    const FormEl = React.createElement(Form, {
+      error: 'sorry pal',
+    });
+    const form = ReactTestUtils.renderIntoDocument(FormEl);
+    const alerts = ReactTestUtils.scryRenderedDOMComponentsWithClass(
+      form,
+      'alert-danger'
+    );
 
+    Code.expect(form).to.exist();
+    Code.expect(alerts).to.have.length(1);
+
+    done();
+  });
+
+  lab.test('it handles a submit event (canceled confirmation)', done => {
+    const confirm = global.window.confirm;
+
+    global.window.confirm = function() {
+      global.window.confirm = confirm;
+
+      return false;
+    };
+
+    const FormEl = React.createElement(Form, {});
+    const form = ReactTestUtils.renderIntoDocument(FormEl);
+    const formTag = ReactTestUtils.findRenderedDOMComponentWithTag(
+      form,
+      'form'
+    );
+
+    ReactTestUtils.Simulate.submit(formTag, {
+      stopPropagation: function() {
         done();
+      },
     });
+  });
 
+  lab.test('it handles a submit event (cofirmed)', done => {
+    const confirm = global.window.confirm;
 
-    lab.test('it renders with error state', (done) => {
+    global.window.confirm = function() {
+      global.window.confirm = confirm;
 
-        const FormEl = React.createElement(Form, {
-            error: 'sorry pal'
-        });
-        const form = ReactTestUtils.renderIntoDocument(FormEl);
-        const alerts = ReactTestUtils.scryRenderedDOMComponentsWithClass(form, 'alert-danger');
+      return true;
+    };
 
-        Code.expect(form).to.exist();
-        Code.expect(alerts).to.have.length(1);
-
+    const FormEl = React.createElement(Form, {
+      action: function() {
         done();
+      },
     });
+    const form = ReactTestUtils.renderIntoDocument(FormEl);
+    const formTag = ReactTestUtils.findRenderedDOMComponentWithTag(
+      form,
+      'form'
+    );
 
-
-    lab.test('it handles a submit event (canceled confirmation)', (done) => {
-
-        const confirm = global.window.confirm;
-
-        global.window.confirm = function () {
-
-            global.window.confirm = confirm;
-
-            return false;
-        };
-
-        const FormEl = React.createElement(Form, {});
-        const form = ReactTestUtils.renderIntoDocument(FormEl);
-        const formTag = ReactTestUtils.findRenderedDOMComponentWithTag(form, 'form');
-
-        ReactTestUtils.Simulate.submit(formTag, {
-            stopPropagation: function () {
-
-                done();
-            }
-        });
-    });
-
-
-    lab.test('it handles a submit event (cofirmed)', (done) => {
-
-        const confirm = global.window.confirm;
-
-        global.window.confirm = function () {
-
-            global.window.confirm = confirm;
-
-            return true;
-        };
-
-        const FormEl = React.createElement(Form, {
-            action: function () {
-
-                done();
-            }
-        });
-        const form = ReactTestUtils.renderIntoDocument(FormEl);
-        const formTag = ReactTestUtils.findRenderedDOMComponentWithTag(form, 'form');
-
-        ReactTestUtils.Simulate.submit(formTag);
-    });
+    ReactTestUtils.Simulate.submit(formTag);
+  });
 });

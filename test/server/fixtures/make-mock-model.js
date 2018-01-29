@@ -1,18 +1,14 @@
 'use strict';
 const MongoModels = require('mongo-models');
 
+const MakeMockModel = function() {
+  const mock = {};
 
-const MakeMockModel = function () {
+  Reflect.ownKeys(MongoModels).forEach(key => {
+    mock[key] = MongoModels[key];
+  });
 
-    const mock = {};
-
-    Reflect.ownKeys(MongoModels).forEach((key) => {
-
-        mock[key] = MongoModels[key];
-    });
-
-    return mock;
+  return mock;
 };
-
 
 module.exports = MakeMockModel;
