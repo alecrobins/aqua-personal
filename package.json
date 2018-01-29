@@ -1,7 +1,7 @@
 {
-  "name": "aqua-custom",
-  "version": "7.0.2",
-  "description": "A website and user system for Node.js",
+  "name": "aqua-personal",
+  "version": "1.0.0",
+  "description": "Made some personal changes to the aqua project",
   "main": "index.js",
   "scripts": {
     "start": "gulp",
