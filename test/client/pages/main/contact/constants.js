@@ -3,16 +3,12 @@ const Code = require('code');
 const Constants = require('../../../../../client/pages/main/contact/constants');
 const Lab = require('lab');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('Contact Constants', () => {
+  lab.test('it loads', done => {
+    Code.expect(Constants).to.exist();
 
-    lab.test('it loads', (done) => {
-
-        Code.expect(Constants).to.exist();
-
-        done();
-    });
+    done();
+  });
 });

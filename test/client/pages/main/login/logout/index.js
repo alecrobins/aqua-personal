@@ -9,102 +9,97 @@ const ReactRouter = require('react-router-dom');
 const ReactTestUtils = require('react-dom/test-utils');
 const Store = require('../../../../../../client/pages/main/login/logout/store');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const stub = {
-    Actions: {
-        logout: function () {}
-    }
+  Actions: {
+    logout: function() {},
+  },
 };
-const Logout = Proxyquire('../../../../../../client/pages/main/login/logout/index.jsx', {
-    '../actions': stub.Actions
-});
+const Logout = Proxyquire(
+  '../../../../../../client/pages/main/login/logout/index.jsx',
+  {
+    '../actions': stub.Actions,
+  }
+);
 const MemoryRouter = ReactRouter.MemoryRouter;
 
-
 lab.experiment('Login Logout Form', () => {
+  let RootEl;
 
-    let RootEl;
+  lab.beforeEach(done => {
+    const LogoutEl = React.createElement(Logout, {});
 
-    lab.beforeEach((done) => {
+    RootEl = React.createElement(MemoryRouter, {}, LogoutEl);
 
-        const LogoutEl = React.createElement(Logout, {});
+    done();
+  });
 
-        RootEl = React.createElement(MemoryRouter, {}, LogoutEl);
+  lab.test('it renders', done => {
+    const root = ReactTestUtils.renderIntoDocument(RootEl);
 
-        done();
+    Code.expect(root).to.exist();
+
+    done();
+  });
+
+  lab.test('it handles unmounting', done => {
+    const container = global.document.createElement('div');
+
+    ReactDOM.render(RootEl, container);
+    ReactDOM.unmountComponentAtNode(container);
+
+    done();
+  });
+
+  lab.test('it handles a store change', done => {
+    const root = ReactTestUtils.renderIntoDocument(RootEl);
+    const logout = ReactTestUtils.findRenderedComponentWithType(root, Logout);
+
+    Store.dispatch({
+      type: Constants.LOGOUT,
     });
 
+    Code.expect(logout.state.loading).to.be.true();
 
-    lab.test('it renders', (done) => {
+    done();
+  });
 
-        const root = ReactTestUtils.renderIntoDocument(RootEl);
+  lab.test('it renders with success state', done => {
+    const root = ReactTestUtils.renderIntoDocument(RootEl);
 
-        Code.expect(root).to.exist();
-
-        done();
+    Store.dispatch({
+      type: Constants.LOGOUT_RESPONSE,
+      err: null,
     });
 
+    const alerts = ReactTestUtils.scryRenderedDOMComponentsWithClass(
+      root,
+      'alert-success'
+    );
 
-    lab.test('it handles unmounting', (done) => {
+    Code.expect(alerts).to.have.length(1);
 
-        const container = global.document.createElement('div');
+    done();
+  });
 
-        ReactDOM.render(RootEl, container);
-        ReactDOM.unmountComponentAtNode(container);
+  lab.test('it renders with error state', done => {
+    const root = ReactTestUtils.renderIntoDocument(RootEl);
 
-        done();
+    Store.dispatch({
+      type: Constants.LOGOUT_RESPONSE,
+      err: new Error('sorry pal'),
+      response: {
+        message: 'major fail',
+      },
     });
 
+    const alerts = ReactTestUtils.scryRenderedDOMComponentsWithClass(
+      root,
+      'alert-warning'
+    );
 
-    lab.test('it handles a store change', (done) => {
+    Code.expect(alerts).to.have.length(1);
 
-        const root = ReactTestUtils.renderIntoDocument(RootEl);
-        const logout = ReactTestUtils.findRenderedComponentWithType(root, Logout);
-
-        Store.dispatch({
-            type: Constants.LOGOUT
-        });
-
-        Code.expect(logout.state.loading).to.be.true();
-
-        done();
-    });
-
-
-    lab.test('it renders with success state', (done) => {
-
-        const root = ReactTestUtils.renderIntoDocument(RootEl);
-
-        Store.dispatch({
-            type: Constants.LOGOUT_RESPONSE,
-            err: null
-        });
-
-        const alerts = ReactTestUtils.scryRenderedDOMComponentsWithClass(root, 'alert-success');
-
-        Code.expect(alerts).to.have.length(1);
-
-        done();
-    });
-
-
-    lab.test('it renders with error state', (done) => {
-
-        const root = ReactTestUtils.renderIntoDocument(RootEl);
-
-        Store.dispatch({
-            type: Constants.LOGOUT_RESPONSE,
-            err: new Error('sorry pal'),
-            response: {
-                message: 'major fail'
-            }
-        });
-
-        const alerts = ReactTestUtils.scryRenderedDOMComponentsWithClass(root, 'alert-warning');
-
-        Code.expect(alerts).to.have.length(1);
-
-        done();
-    });
+    done();
+  });
 });

@@ -4,70 +4,60 @@ const Constants = require('../../../../../../client/pages/account/settings/const
 const Lab = require('lab');
 const Store = require('../../../../../../client/pages/account/settings/store');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('Account Password Reducer', () => {
-
-    lab.test('it handles a SAVE_PASSWORD action', (done) => {
-
-        Store.dispatch({
-            type: Constants.SAVE_PASSWORD
-        });
-
-        const state = Store.getState().password;
-
-        Code.expect(state.loading).to.be.true();
-
-        done();
+  lab.test('it handles a SAVE_PASSWORD action', done => {
+    Store.dispatch({
+      type: Constants.SAVE_PASSWORD,
     });
 
+    const state = Store.getState().password;
 
-    lab.test('it handles a SAVE_PASSWORD_RESPONSE action (success)', (done) => {
+    Code.expect(state.loading).to.be.true();
 
-        Store.dispatch({
-            type: Constants.SAVE_PASSWORD_RESPONSE
-        });
+    done();
+  });
 
-        const state = Store.getState().password;
-
-        Code.expect(state.loading).to.be.false();
-
-        done();
+  lab.test('it handles a SAVE_PASSWORD_RESPONSE action (success)', done => {
+    Store.dispatch({
+      type: Constants.SAVE_PASSWORD_RESPONSE,
     });
 
+    const state = Store.getState().password;
 
-    lab.test('it handles a SAVE_PASSWORD_RESPONSE action (error)', (done) => {
+    Code.expect(state.loading).to.be.false();
 
-        Store.dispatch({
-            type: Constants.SAVE_PASSWORD_RESPONSE,
-            err: new Error('sorry pal'),
-            response: {
-                message: 'something else failed'
-            }
-        });
+    done();
+  });
 
-        const state = Store.getState().password;
-
-        Code.expect(state.loading).to.be.false();
-        Code.expect(state.showSaveSuccess).to.be.false();
-        Code.expect(state.error).to.equal('something else failed');
-
-        done();
+  lab.test('it handles a SAVE_PASSWORD_RESPONSE action (error)', done => {
+    Store.dispatch({
+      type: Constants.SAVE_PASSWORD_RESPONSE,
+      err: new Error('sorry pal'),
+      response: {
+        message: 'something else failed',
+      },
     });
 
+    const state = Store.getState().password;
 
-    lab.test('it handles a HIDE_PASSWORD_SAVE_SUCCESS action', (done) => {
+    Code.expect(state.loading).to.be.false();
+    Code.expect(state.showSaveSuccess).to.be.false();
+    Code.expect(state.error).to.equal('something else failed');
 
-        Store.dispatch({
-            type: Constants.HIDE_PASSWORD_SAVE_SUCCESS
-        });
+    done();
+  });
 
-        const state = Store.getState().password;
-
-        Code.expect(state.showSaveSuccess).to.be.false();
-
-        done();
+  lab.test('it handles a HIDE_PASSWORD_SAVE_SUCCESS action', done => {
+    Store.dispatch({
+      type: Constants.HIDE_PASSWORD_SAVE_SUCCESS,
     });
+
+    const state = Store.getState().password;
+
+    Code.expect(state.showSaveSuccess).to.be.false();
+
+    done();
+  });
 });

@@ -5,201 +5,203 @@ const FluxConstant = require('flux-constant');
 const Lab = require('lab');
 const Proxyquire = require('proxyquire');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const stub = {
-    ApiActions: {
-        get: function () {
-
-            stub.ApiActions.get.mock.apply(null, arguments);
-        },
-        put: function () {
-
-            stub.ApiActions.put.mock.apply(null, arguments);
-        },
-        delete: function () {
-
-            stub.ApiActions.delete.mock.apply(null, arguments);
-        }
+  ApiActions: {
+    get: function() {
+      stub.ApiActions.get.mock.apply(null, arguments);
     },
-    Store: {
-
-        dispatch: function () {
-
-            stub.Store.dispatch.mock.apply(null, arguments);
-        }
-    }
+    put: function() {
+      stub.ApiActions.put.mock.apply(null, arguments);
+    },
+    delete: function() {
+      stub.ApiActions.delete.mock.apply(null, arguments);
+    },
+  },
+  Store: {
+    dispatch: function() {
+      stub.Store.dispatch.mock.apply(null, arguments);
+    },
+  },
 };
-const Actions = Proxyquire('../../../../../../client/pages/admin/users/details/actions', {
+const Actions = Proxyquire(
+  '../../../../../../client/pages/admin/users/details/actions',
+  {
     '../../../../actions/api': stub.ApiActions,
-    './store': stub.Store
-});
-
+    './store': stub.Store,
+  }
+);
 
 lab.experiment('Admin Users Details Actions', () => {
+  lab.test('it calls ApiActions.get from getDetails', done => {
+    stub.ApiActions.get.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(url).to.include('abcxyz');
+      Code.expect(data).to.be.undefined();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.not.exist();
 
-    lab.test('it calls ApiActions.get from getDetails', (done) => {
+      done();
+    };
 
-        stub.ApiActions.get.mock = function (url, data, store, typeReq, typeRes, callback) {
+    Actions.getDetails('abcxyz');
+  });
 
-            Code.expect(url).to.be.a.string();
-            Code.expect(url).to.include('abcxyz');
-            Code.expect(data).to.be.undefined();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.not.exist();
+  lab.test('it calls ApiActions.put from saveDetails', done => {
+    stub.ApiActions.put.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(url).to.include('abcxyz');
+      Code.expect(data).to.be.an.object();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.not.exist();
 
-            done();
-        };
+      done();
+    };
 
-        Actions.getDetails('abcxyz');
-    });
+    Actions.saveDetails('abcxyz', {});
+  });
 
+  lab.test('it calls dispatch from hideDetailsSaveSuccess', done => {
+    stub.Store.dispatch.mock = function(action) {
+      if (action.type === Constants.HIDE_DETAILS_SAVE_SUCCESS) {
+        done();
+      }
+    };
 
-    lab.test('it calls ApiActions.put from saveDetails', (done) => {
+    Actions.hideDetailsSaveSuccess();
+  });
 
-        stub.ApiActions.put.mock = function (url, data, store, typeReq, typeRes, callback) {
+  lab.test('it calls ApiActions.put from savePassword', done => {
+    stub.ApiActions.put.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(data).to.be.an.object();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.not.exist();
 
-            Code.expect(url).to.be.a.string();
-            Code.expect(url).to.include('abcxyz');
-            Code.expect(data).to.be.an.object();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.not.exist();
+      done();
+    };
 
-            done();
-        };
+    const id = 'abcxyz';
+    const data = {
+      password: 'toasting',
+      passwordConfirm: 'toasting',
+    };
 
-        Actions.saveDetails('abcxyz', {});
-    });
+    Actions.savePassword(id, data);
+  });
 
+  lab.test('it calls dispatch from savePassword (passwords mismatch)', done => {
+    stub.Store.dispatch.mock = function(action) {
+      if (action.type === Constants.SAVE_PASSWORD_RESPONSE) {
+        done();
+      }
+    };
 
-    lab.test('it calls dispatch from hideDetailsSaveSuccess', (done) => {
+    const id = 'abcxyz';
+    const data = {
+      password: 'toasting',
+      passwordConfirm: 'bread',
+    };
 
-        stub.Store.dispatch.mock = function (action) {
+    Actions.savePassword(id, data);
+  });
 
-            if (action.type === Constants.HIDE_DETAILS_SAVE_SUCCESS) {
+  lab.test('it calls dispatch from hidePasswordSaveSuccess', done => {
+    stub.Store.dispatch.mock = function(action) {
+      if (action.type === Constants.HIDE_PASSWORD_SAVE_SUCCESS) {
+        done();
+      }
+    };
 
-                done();
-            }
-        };
+    Actions.hidePasswordSaveSuccess();
+  });
 
-        Actions.hideDetailsSaveSuccess();
-    });
+  lab.test('it calls ApiActions.delete from delete (success)', done => {
+    const scrollTo = global.window.scrollTo;
 
+    global.window.scrollTo = function() {
+      global.window.scrollTo = scrollTo;
 
-    lab.test('it calls ApiActions.put from savePassword', (done) => {
+      done();
+    };
 
-        stub.ApiActions.put.mock = function (url, data, store, typeReq, typeRes, callback) {
+    stub.ApiActions.delete.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(url).to.include('abcxyz');
+      Code.expect(data).to.be.undefined();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.exist();
 
-            Code.expect(url).to.be.a.string();
-            Code.expect(data).to.be.an.object();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.not.exist();
+      callback(null, {});
+    };
 
-            done();
-        };
+    const history = {
+      push: function(path) {
+        Code.expect(path).to.be.a.string();
+      },
+    };
 
-        const id = 'abcxyz';
-        const data = {
-            password: 'toasting',
-            passwordConfirm: 'toasting'
-        };
+    Actions.delete('abcxyz', history);
+  });
 
-        Actions.savePassword(id, data);
-    });
+  lab.test('it calls ApiActions.delete from delete (failure)', done => {
+    stub.ApiActions.delete.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(url).to.include('abcxyz');
+      Code.expect(data).to.be.undefined();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.exist();
 
+      callback(new Error('sorry pal'));
 
-    lab.test('it calls dispatch from savePassword (passwords mismatch)', (done) => {
+      done();
+    };
 
-        stub.Store.dispatch.mock = function (action) {
-
-            if (action.type === Constants.SAVE_PASSWORD_RESPONSE) {
-
-                done();
-            }
-        };
-
-        const id = 'abcxyz';
-        const data = {
-            password: 'toasting',
-            passwordConfirm: 'bread'
-        };
-
-        Actions.savePassword(id, data);
-    });
-
-
-    lab.test('it calls dispatch from hidePasswordSaveSuccess', (done) => {
-
-        stub.Store.dispatch.mock = function (action) {
-
-            if (action.type === Constants.HIDE_PASSWORD_SAVE_SUCCESS) {
-
-                done();
-            }
-        };
-
-        Actions.hidePasswordSaveSuccess();
-    });
-
-
-    lab.test('it calls ApiActions.delete from delete (success)', (done) => {
-
-        const scrollTo = global.window.scrollTo;
-
-        global.window.scrollTo = function () {
-
-            global.window.scrollTo = scrollTo;
-
-            done();
-        };
-
-        stub.ApiActions.delete.mock = function (url, data, store, typeReq, typeRes, callback) {
-
-            Code.expect(url).to.be.a.string();
-            Code.expect(url).to.include('abcxyz');
-            Code.expect(data).to.be.undefined();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.exist();
-
-            callback(null, {});
-        };
-
-        const history = {
-            push: function (path) {
-
-                Code.expect(path).to.be.a.string();
-            }
-        };
-
-        Actions.delete('abcxyz', history);
-    });
-
-
-    lab.test('it calls ApiActions.delete from delete (failure)', (done) => {
-
-        stub.ApiActions.delete.mock = function (url, data, store, typeReq, typeRes, callback) {
-
-            Code.expect(url).to.be.a.string();
-            Code.expect(url).to.include('abcxyz');
-            Code.expect(data).to.be.undefined();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.exist();
-
-            callback(new Error('sorry pal'));
-
-            done();
-        };
-
-        Actions.delete('abcxyz');
-    });
+    Actions.delete('abcxyz');
+  });
 });

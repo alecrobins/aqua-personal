@@ -6,56 +6,46 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const ReactTestUtils = require('react-dom/test-utils');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('Account Home Page', () => {
+  lab.test('it renders', done => {
+    const ComponentEl = React.createElement(Component, {});
+    const component = ReactTestUtils.renderIntoDocument(ComponentEl);
 
-    lab.test('it renders', (done) => {
+    Code.expect(component).to.exist();
 
-        const ComponentEl = React.createElement(Component, {});
-        const component = ReactTestUtils.renderIntoDocument(ComponentEl);
+    done();
+  });
 
-        Code.expect(component).to.exist();
+  lab.test('it handles unmounting', done => {
+    const container = global.document.createElement('div');
+    const ComponentEl = React.createElement(Component, {});
 
-        done();
-    });
+    ReactDOM.render(ComponentEl, container);
+    ReactDOM.unmountComponentAtNode(container);
 
+    done();
+  });
 
-    lab.test('it handles unmounting', (done) => {
+  lab.test('it refreshes the time with interval handler', done => {
+    const container = global.document.createElement('div');
+    const realSetInterval = setInterval;
 
-        const container = global.document.createElement('div');
-        const ComponentEl = React.createElement(Component, {});
+    setInterval = function(handler, time) {
+      return realSetInterval(() => {
+        handler();
 
-        ReactDOM.render(ComponentEl, container);
+        setInterval = realSetInterval;
+
         ReactDOM.unmountComponentAtNode(container);
 
         done();
-    });
+      });
+    };
 
+    const ComponentEl = React.createElement(Component, {});
 
-    lab.test('it refreshes the time with interval handler', (done) => {
-
-        const container = global.document.createElement('div');
-        const realSetInterval = setInterval;
-
-        setInterval = function (handler, time) {
-
-            return realSetInterval(() => {
-
-                handler();
-
-                setInterval = realSetInterval;
-
-                ReactDOM.unmountComponentAtNode(container);
-
-                done();
-            });
-        };
-
-        const ComponentEl = React.createElement(Component, {});
-
-        ReactDOM.render(ComponentEl, container);
-    });
+    ReactDOM.render(ComponentEl, container);
+  });
 });

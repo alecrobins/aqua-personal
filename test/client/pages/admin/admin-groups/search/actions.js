@@ -5,156 +5,151 @@ const FluxConstant = require('flux-constant');
 const Lab = require('lab');
 const Proxyquire = require('proxyquire');
 
-
-const lab = exports.lab = Lab.script();
+const lab = (exports.lab = Lab.script());
 const stub = {
-    ApiActions: {
-        get: function () {
-
-            stub.ApiActions.get.mock.apply(null, arguments);
-        },
-        post: function () {
-
-            stub.ApiActions.post.mock.apply(null, arguments);
-        }
+  ApiActions: {
+    get: function() {
+      stub.ApiActions.get.mock.apply(null, arguments);
     },
-    Store: {
-
-        dispatch: function () {
-
-            stub.Store.dispatch.mock.apply(null, arguments);
-        }
-    }
+    post: function() {
+      stub.ApiActions.post.mock.apply(null, arguments);
+    },
+  },
+  Store: {
+    dispatch: function() {
+      stub.Store.dispatch.mock.apply(null, arguments);
+    },
+  },
 };
-const Actions = Proxyquire('../../../../../../client/pages/admin/admin-groups/search/actions', {
+const Actions = Proxyquire(
+  '../../../../../../client/pages/admin/admin-groups/search/actions',
+  {
     '../../../../actions/api': stub.ApiActions,
-    './store': stub.Store
-});
-
+    './store': stub.Store,
+  }
+);
 
 lab.experiment('Admin Groups Search Actions', () => {
+  lab.test('it calls ApiActions.get from getResults', done => {
+    stub.ApiActions.get.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(data).to.be.an.object();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.not.exist();
 
-    lab.test('it calls ApiActions.get from getResults', (done) => {
+      done();
+    };
 
-        stub.ApiActions.get.mock = function (url, data, store, typeReq, typeRes, callback) {
+    Actions.getResults({});
+  });
 
-            Code.expect(url).to.be.a.string();
-            Code.expect(data).to.be.an.object();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.not.exist();
+  lab.test('it calls history.push from changeSearchQuery', done => {
+    const scrollTo = global.window.scrollTo;
 
-            done();
-        };
+    global.window.scrollTo = function() {
+      global.window.scrollTo = scrollTo;
 
-        Actions.getResults({});
-    });
+      done();
+    };
 
+    const history = {
+      push: function(config) {
+        Code.expect(config.pathname).to.be.a.string();
+        Code.expect(config.search).to.be.a.string();
+      },
+    };
 
-    lab.test('it calls history.push from changeSearchQuery', (done) => {
+    Actions.changeSearchQuery({}, history);
+  });
 
-        const scrollTo = global.window.scrollTo;
+  lab.test('it calls dispatch from showCreateNew', done => {
+    stub.Store.dispatch.mock = function(action) {
+      if (action.type === Constants.SHOW_CREATE_NEW) {
+        done();
+      }
+    };
 
-        global.window.scrollTo = function () {
+    Actions.showCreateNew();
+  });
 
-            global.window.scrollTo = scrollTo;
+  lab.test('it calls dispatch from hideCreateNew', done => {
+    stub.Store.dispatch.mock = function(action) {
+      if (action.type === Constants.HIDE_CREATE_NEW) {
+        done();
+      }
+    };
 
-            done();
-        };
+    Actions.hideCreateNew();
+  });
 
-        const history = {
-            push: function (config) {
+  lab.test('it calls ApiActions.post from createNew (success)', done => {
+    const scrollTo = global.window.scrollTo;
 
-                Code.expect(config.pathname).to.be.a.string();
-                Code.expect(config.search).to.be.a.string();
-            }
-        };
+    global.window.scrollTo = function() {
+      global.window.scrollTo = scrollTo;
 
-        Actions.changeSearchQuery({}, history);
-    });
+      done();
+    };
 
+    stub.Store.dispatch.mock = () => {};
 
-    lab.test('it calls dispatch from showCreateNew', (done) => {
+    stub.ApiActions.post.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(data).to.be.an.object();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.exist();
 
-        stub.Store.dispatch.mock = function (action) {
+      callback(null, {});
+    };
 
-            if (action.type === Constants.SHOW_CREATE_NEW) {
+    const history = {
+      replace: function(path) {
+        Code.expect(path).to.be.an.object();
+      },
+    };
 
-                done();
-            }
-        };
+    Actions.createNew({}, history);
+  });
 
-        Actions.showCreateNew();
-    });
+  lab.test('it calls ApiActions.post from createNew (failure)', done => {
+    stub.ApiActions.post.mock = function(
+      url,
+      data,
+      store,
+      typeReq,
+      typeRes,
+      callback
+    ) {
+      Code.expect(url).to.be.a.string();
+      Code.expect(data).to.be.an.object();
+      Code.expect(store).to.be.an.object();
+      Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
+      Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
+      Code.expect(callback).to.exist();
 
+      callback(new Error('sorry pal'));
 
-    lab.test('it calls dispatch from hideCreateNew', (done) => {
+      done();
+    };
 
-        stub.Store.dispatch.mock = function (action) {
-
-            if (action.type === Constants.HIDE_CREATE_NEW) {
-
-                done();
-            }
-        };
-
-        Actions.hideCreateNew();
-    });
-
-
-    lab.test('it calls ApiActions.post from createNew (success)', (done) => {
-
-        const scrollTo = global.window.scrollTo;
-
-        global.window.scrollTo = function () {
-
-            global.window.scrollTo = scrollTo;
-
-            done();
-        };
-
-        stub.Store.dispatch.mock = () => {};
-
-        stub.ApiActions.post.mock = function (url, data, store, typeReq, typeRes, callback) {
-
-            Code.expect(url).to.be.a.string();
-            Code.expect(data).to.be.an.object();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.exist();
-
-            callback(null, {});
-        };
-
-        const history = {
-            replace: function (path) {
-
-                Code.expect(path).to.be.an.object();
-            }
-        };
-
-        Actions.createNew({}, history);
-    });
-
-
-    lab.test('it calls ApiActions.post from createNew (failure)', (done) => {
-
-        stub.ApiActions.post.mock = function (url, data, store, typeReq, typeRes, callback) {
-
-            Code.expect(url).to.be.a.string();
-            Code.expect(data).to.be.an.object();
-            Code.expect(store).to.be.an.object();
-            Code.expect(typeReq).to.be.an.instanceof(FluxConstant);
-            Code.expect(typeRes).to.be.an.instanceof(FluxConstant);
-            Code.expect(callback).to.exist();
-
-            callback(new Error('sorry pal'));
-
-            done();
-        };
-
-        Actions.createNew({});
-    });
+    Actions.createNew({});
+  });
 });

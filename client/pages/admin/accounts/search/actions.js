@@ -5,66 +5,58 @@ const Constants = require('./constants');
 const Store = require('./store');
 const Qs = require('qs');
 
-
 class Actions {
-    static getResults(data) {
+  static getResults(data) {
+    ApiActions.get(
+      '/api/accounts',
+      data,
+      Store,
+      Constants.GET_RESULTS,
+      Constants.GET_RESULTS_RESPONSE
+    );
+  }
 
-        ApiActions.get(
-            '/api/accounts',
-            data,
-            Store,
-            Constants.GET_RESULTS,
-            Constants.GET_RESULTS_RESPONSE
-        );
-    }
+  static changeSearchQuery(data, history) {
+    history.push({
+      pathname: '/admin/accounts',
+      search: `?${Qs.stringify(data)}`,
+    });
 
-    static changeSearchQuery(data, history) {
+    window.scrollTo(0, 0);
+  }
 
-        history.push({
-            pathname: '/admin/accounts',
-            search: `?${Qs.stringify(data)}`
-        });
+  static showCreateNew() {
+    Store.dispatch({
+      type: Constants.SHOW_CREATE_NEW,
+    });
+  }
 
-        window.scrollTo(0, 0);
-    }
+  static hideCreateNew() {
+    Store.dispatch({
+      type: Constants.HIDE_CREATE_NEW,
+    });
+  }
 
-    static showCreateNew() {
+  static createNew(data, history) {
+    ApiActions.post(
+      '/api/accounts',
+      data,
+      Store,
+      Constants.CREATE_NEW,
+      Constants.CREATE_NEW_RESPONSE,
+      (err, response) => {
+        if (!err) {
+          this.hideCreateNew();
 
-        Store.dispatch({
-            type: Constants.SHOW_CREATE_NEW
-        });
-    }
+          const path = `/admin/accounts/${response._id}`;
 
-    static hideCreateNew() {
+          history.push(path);
 
-        Store.dispatch({
-            type: Constants.HIDE_CREATE_NEW
-        });
-    }
-
-    static createNew(data, history) {
-
-        ApiActions.post(
-            '/api/accounts',
-            data,
-            Store,
-            Constants.CREATE_NEW,
-            Constants.CREATE_NEW_RESPONSE,
-            (err, response) => {
-
-                if (!err) {
-                    this.hideCreateNew();
-
-                    const path = `/admin/accounts/${response._id}`;
-
-                    history.push(path);
-
-                    window.scrollTo(0, 0);
-                }
-            }
-        );
-    }
+          window.scrollTo(0, 0);
+        }
+      }
+    );
+  }
 }
-
 
 module.exports = Actions;

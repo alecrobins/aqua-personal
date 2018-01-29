@@ -6,13 +6,12 @@ const Permissions = require('./reducers/permissions');
 const Redux = require('redux');
 const User = require('./reducers/user');
 
-
 module.exports = Redux.createStore(
-    Redux.combineReducers({
-        delete: Delete,
-        details: Details,
-        groups: Groups,
-        permissions: Permissions,
-        user: User
-    })
+  Redux.combineReducers({
+    delete: Delete,
+    details: Details,
+    groups: Groups,
+    permissions: Permissions,
+    user: User,
+  })
 );

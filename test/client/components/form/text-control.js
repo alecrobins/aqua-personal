@@ -5,66 +5,62 @@ const React = require('react');
 const ReactTestUtils = require('react-dom/test-utils');
 const TextControl = require('../../../../client/components/form/text-control.jsx');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('TextControl', () => {
+  lab.test('it renders', done => {
+    const props = {};
+    const TextControlEl = React.createElement(TextControl, props);
+    const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(
+      textControl,
+      'input'
+    );
 
-    lab.test('it renders', (done) => {
+    Code.expect(input).to.exist();
 
-        const props = {};
-        const TextControlEl = React.createElement(TextControl, props);
-        const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
-        const input = ReactTestUtils.findRenderedDOMComponentWithTag(textControl, 'input');
+    done();
+  });
 
-        Code.expect(input).to.exist();
+  lab.test('it renders disabled', done => {
+    const props = {
+      disabled: true,
+    };
+    const TextControlEl = React.createElement(TextControl, props);
+    const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
+    const input = ReactTestUtils.findRenderedDOMComponentWithTag(
+      textControl,
+      'input'
+    );
 
-        done();
-    });
+    Code.expect(input.disabled).to.be.true();
 
+    done();
+  });
 
-    lab.test('it renders disabled', (done) => {
+  lab.test('it returns the current value', done => {
+    const props = {
+      value: 'foo',
+      onChange: function() {},
+    };
+    const TextControlEl = React.createElement(TextControl, props);
+    const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
 
-        const props = {
-            disabled: true
-        };
-        const TextControlEl = React.createElement(TextControl, props);
-        const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
-        const input = ReactTestUtils.findRenderedDOMComponentWithTag(textControl, 'input');
+    Code.expect(textControl.value()).to.equal('foo');
 
-        Code.expect(input.disabled).to.be.true();
+    done();
+  });
 
-        done();
-    });
+  lab.test('it focuses on the input field', done => {
+    const props = {
+      value: 'foo',
+      onChange: function() {},
+    };
+    const TextControlEl = React.createElement(TextControl, props);
+    const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
 
+    textControl.focus();
 
-    lab.test('it returns the current value', (done) => {
-
-        const props = {
-            value: 'foo',
-            onChange: function () {}
-        };
-        const TextControlEl = React.createElement(TextControl, props);
-        const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
-
-        Code.expect(textControl.value()).to.equal('foo');
-
-        done();
-    });
-
-
-    lab.test('it focuses on the input field', (done) => {
-
-        const props = {
-            value: 'foo',
-            onChange: function () {}
-        };
-        const TextControlEl = React.createElement(TextControl, props);
-        const textControl = ReactTestUtils.renderIntoDocument(TextControlEl);
-
-        textControl.focus();
-
-        done();
-    });
+    done();
+  });
 });

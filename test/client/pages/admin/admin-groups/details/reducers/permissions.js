@@ -4,111 +4,106 @@ const Constants = require('../../../../../../../client/pages/admin/admin-groups/
 const Lab = require('lab');
 const Store = require('../../../../../../../client/pages/admin/admin-groups/details/store');
 
-
-const lab = exports.lab = Lab.script();
-
+const lab = (exports.lab = Lab.script());
 
 lab.experiment('Admin Groups Permissions Reducer', () => {
+  lab.test(
+    'it handles a GET_DETAILS_RESPONSE action (only setting permissions if present)',
+    done => {
+      Store.dispatch({
+        type: Constants.GET_DETAILS_RESPONSE,
+        err: null,
+        response: {
+          _id: 'abcxyz',
+        },
+      });
 
-    lab.test('it handles a GET_DETAILS_RESPONSE action (only setting permissions if present)', (done) => {
+      let state = Store.getState().permissions;
 
-        Store.dispatch({
-            type: Constants.GET_DETAILS_RESPONSE,
-            err: null,
-            response: {
-                _id: 'abcxyz'
-            }
-        });
+      Code.expect(state.adminGroupId).to.equal('abcxyz');
+      Code.expect(state.permissions).to.have.length(0);
 
-        let state = Store.getState().permissions;
+      Store.dispatch({
+        type: Constants.GET_DETAILS_RESPONSE,
+        err: null,
+        response: {
+          _id: 'abcxyz',
+          permissions: {
+            FOO: true,
+            BAR: false,
+          },
+        },
+      });
 
-        Code.expect(state.adminGroupId).to.equal('abcxyz');
-        Code.expect(state.permissions).to.have.length(0);
+      state = Store.getState().permissions;
 
-        Store.dispatch({
-            type: Constants.GET_DETAILS_RESPONSE,
-            err: null,
-            response: {
-                _id: 'abcxyz',
-                permissions: {
-                    FOO: true,
-                    BAR: false
-                }
-            }
-        });
+      Code.expect(state.permissions).to.have.length(2);
 
-        state = Store.getState().permissions;
+      done();
+    }
+  );
 
-        Code.expect(state.permissions).to.have.length(2);
-
-        done();
+  lab.test('it handles a SAVE_PERMISSIONS action', done => {
+    Store.dispatch({
+      type: Constants.SAVE_PERMISSIONS,
+      request: {
+        data: {
+          permissions: {
+            FOO: true,
+            BAR: false,
+          },
+        },
+      },
     });
 
+    const state = Store.getState().permissions;
 
-    lab.test('it handles a SAVE_PERMISSIONS action', (done) => {
+    Code.expect(state.loading).to.be.true();
+    Code.expect(state.permissions.FOO).to.be.true();
+    Code.expect(state.permissions.BAR).to.be.false();
 
-        Store.dispatch({
-            type: Constants.SAVE_PERMISSIONS,
-            request: {
-                data: {
-                    permissions: {
-                        FOO: true,
-                        BAR: false
-                    }
-                }
-            }
-        });
+    done();
+  });
 
-        const state = Store.getState().permissions;
+  lab.test(
+    'it handles a SAVE_PERMISSIONS_RESPONSE action (only setting permissions if present)',
+    done => {
+      Store.dispatch({
+        type: Constants.SAVE_PERMISSIONS_RESPONSE,
+        err: null,
+        response: {
+          permissions: {},
+        },
+      });
 
-        Code.expect(state.loading).to.be.true();
-        Code.expect(state.permissions.FOO).to.be.true();
-        Code.expect(state.permissions.BAR).to.be.false();
+      let state = Store.getState().permissions;
 
-        done();
+      Code.expect(state.loading).to.be.false();
+      Code.expect(state.permissions).to.have.length(0);
+
+      Store.dispatch({
+        type: Constants.SAVE_PERMISSIONS_RESPONSE,
+        err: null,
+        response: {},
+      });
+
+      state = Store.getState().permissions;
+
+      Code.expect(state.loading).to.be.false();
+
+      done();
+    }
+  );
+
+  lab.test('it handles a HIDE_PERMISSIONS_SAVE_SUCCESS action', done => {
+    Store.dispatch({
+      type: Constants.HIDE_PERMISSIONS_SAVE_SUCCESS,
     });
 
+    const state = Store.getState().permissions;
 
-    lab.test('it handles a SAVE_PERMISSIONS_RESPONSE action (only setting permissions if present)', (done) => {
+    Code.expect(state.showSaveSuccess).to.be.false();
 
-        Store.dispatch({
-            type: Constants.SAVE_PERMISSIONS_RESPONSE,
-            err: null,
-            response: {
-                permissions: {}
-            }
-        });
-
-        let state = Store.getState().permissions;
-
-        Code.expect(state.loading).to.be.false();
-        Code.expect(state.permissions).to.have.length(0);
-
-        Store.dispatch({
-            type: Constants.SAVE_PERMISSIONS_RESPONSE,
-            err: null,
-            response: {
-            }
-        });
-
-        state = Store.getState().permissions;
-
-        Code.expect(state.loading).to.be.false();
-
-        done();
-    });
-
-
-    lab.test('it handles a HIDE_PERMISSIONS_SAVE_SUCCESS action', (done) => {
-
-        Store.dispatch({
-            type: Constants.HIDE_PERMISSIONS_SAVE_SUCCESS
-        });
-
-        const state = Store.getState().permissions;
-
-        Code.expect(state.showSaveSuccess).to.be.false();
-
-        done();
-    });
+    done();
+  });
 });
